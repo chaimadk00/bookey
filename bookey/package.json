@@ -1,0 +1,33 @@
+{
+  "name": "bookey",
+  "private": true,
+  "version": "0.6.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node backend/server.js",
+    "server": "node backend/server.js",
+    "server:dev": "node --watch backend/server.js",
+    "seed": "node backend/seed.js",
+    "test:api": "node backend/test-suite.js"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.2.7",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.11.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-redux": "^9.1.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
+  }
+}

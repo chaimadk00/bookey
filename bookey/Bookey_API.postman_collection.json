@@ -1,0 +1,427 @@
+{
+  "info": {
+    "_postman_id": "bookey-rest-api-ensta-tp3",
+    "name": "Bookey Bookstore REST API (TD-TP 3)",
+    "description": "Comprehensive Postman Collection for ENSTA WAMD Module TD-TP 3: Node.js, Express.js, MongoDB, JWT, OAuth 2.0, and Rate Limiting.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "1. Register New User (201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Amina Benali\",\n  \"email\": \"amina.benali@ensta.dz\",\n  \"password\": \"secret123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Registers a new user account with hashed password in MongoDB."
+          }
+        },
+        {
+          "name": "2. Register Duplicate Email (409 Conflict)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Amina Duplicate\",\n  \"email\": \"amina.benali@ensta.dz\",\n  \"password\": \"differentpass\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Attempts to register with an already existing email address. Must return 409 Conflict."
+          }
+        },
+        {
+          "name": "3. Login Valid User (200 OK + JWT Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.token) {",
+                  "    pm.collectionVariables.set('token', response.token);",
+                  "    console.log('Saved JWT Token to collection variables:', response.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"amina.benali@ensta.dz\",\n  \"password\": \"secret123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticates user credentials and returns a signed JWT token."
+          }
+        },
+        {
+          "name": "4. Login Invalid Credentials (401 Unauthorized)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"amina.benali@ensta.dz\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Attempts to log in with an incorrect password. Must return 401 Unauthorized."
+          }
+        },
+        {
+          "name": "5. OAuth 2.0 / OpenID Connect Token (200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.access_token) {",
+                  "    pm.collectionVariables.set('token', res.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"ensta_oauth_client\",\n  \"client_secret\": \"ensta_secret\",\n  \"grant_type\": \"client_credentials\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/oauth/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "oauth", "token"]
+            },
+            "description": "OAuth 2.0 Token Endpoint returning Bearer access_token for testing."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Products Management",
+      "item": [
+        {
+          "name": "1. Get All Products (Public - 200 OK)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.products && res.products.length > 0) {",
+                  "    pm.collectionVariables.set('productId', res.products[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Retrieves all products from MongoDB. Accessible publicly without authentication."
+          }
+        },
+        {
+          "name": "2. Get Single Product by ID (Public - 200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "{{productId}}"]
+            },
+            "description": "Retrieves one product by its MongoDB _id. Publicly accessible."
+          }
+        },
+        {
+          "name": "3. Create Product (JWT Required - 201 Created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.product && res.product._id) {",
+                  "    pm.collectionVariables.set('productId', res.product._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nedjma (Collector Edition)\",\n  \"description\": \"A masterpiece of Algerian modernism, exploring revolutionary resistance and cultural identity.\",\n  \"price\": 1800,\n  \"category\": \"Novel\",\n  \"imageUrl\": \"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c\",\n  \"stock\": 30,\n  \"author\": \"Kateb Yacine\",\n  \"year\": 1956,\n  \"color\": \"#0b5d3b\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Creates a new product document in MongoDB. Requires valid JWT Bearer token."
+          }
+        },
+        {
+          "name": "4. Update Product (JWT Required - 200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 1650,\n  \"stock\": 45,\n  \"description\": \"Updated description: Limited archival cloth-bound hardcover edition.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "{{productId}}"]
+            },
+            "description": "Updates an existing product by ID. Requires JWT Bearer token."
+          }
+        },
+        {
+          "name": "5. Delete Product (JWT Required - 200 OK)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "{{productId}}"]
+            },
+            "description": "Deletes a product document from MongoDB. Requires JWT Bearer token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Security & Error Handling Tests",
+      "item": [
+        {
+          "name": "1. Protected Request Without Token (401 Unauthorized)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Unauthorized Book\",\n  \"price\": 1000,\n  \"category\": \"Novel\",\n  \"description\": \"Test description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Tests product creation without providing an Authorization header. Must return 401 Unauthorized."
+          }
+        },
+        {
+          "name": "2. Protected Request With Invalid Token (401 Unauthorized)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer this_is_a_completely_fake_invalid_jwt_token_12345"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Invalid Token Book\",\n  \"price\": 1000,\n  \"category\": \"Novel\",\n  \"description\": \"Test description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Tests product creation with an invalid or tampered JWT. Must return 401 Unauthorized."
+          }
+        },
+        {
+          "name": "3. Invalid Product ID Format (400 Bad Request)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/not-a-valid-mongodb-id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "not-a-valid-mongodb-id"]
+            },
+            "description": "Tests retrieving a product with a malformed ID string. Must return 400 Bad Request."
+          }
+        },
+        {
+          "name": "4. Non-Existent Product ID (404 Not Found)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/60d5ecb8b5c9c72e8c8b4567",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", "60d5ecb8b5c9c72e8c8b4567"]
+            },
+            "description": "Tests retrieving a valid 24-character hexadecimal ObjectId that does not exist in the database. Must return 404 Not Found."
+          }
+        },
+        {
+          "name": "5. Missing Required Product Information (400 Bad Request)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Incomplete Product\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Tests creating a product with missing required fields (description, price, category). Must return 400 Bad Request."
+          }
+        },
+        {
+          "name": "6. Rate Limiting Test - Brute Force Login (429 Too Many Requests)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"brute.force@ensta.dz\",\n  \"password\": \"wrong\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Send this request 6 times consecutively within 15 minutes. On the 6th attempt, the API will return HTTP 429 Too Many Requests."
+          }
+        }
+      ]
+    }
+  ]
+}

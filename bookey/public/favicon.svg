@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44">
+  <circle cx="22" cy="22" r="21" fill="#5C7752"/>
+  <circle cx="22" cy="22" r="18" fill="none" stroke="#FDFBF7" stroke-width="1.2" stroke-dasharray="3 2"/>
+  <defs>
+    <mask id="m"><rect width="44" height="44" fill="#fff"/><circle cx="25" cy="22" r="12" fill="#000"/></mask>
+  </defs>
+  <circle cx="22" cy="22" r="14" fill="#FFFDF9" mask="url(#m)"/>
+  <polygon fill="#DE8361" points="26,17 27.2,20.2 30.6,20.3 27.8,22.3 28.8,25.6 26,23.6 23.2,25.6 24.2,22.3 21.4,20.3 24.8,20.2"/>
+</svg>
